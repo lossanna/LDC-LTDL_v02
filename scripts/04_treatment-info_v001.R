@@ -76,7 +76,7 @@ length(unique(treatment.info$Treatment_Type)) == nrow(major.to.treatment)
 # Write treatment hierarchy table to CSV ----------------------------------
 
 write_csv(major.to.treatment,
-          file = "data/data-wrangling-intermediate/03_treatment-hierarchy-table_v001.csv")
+          file = "data/data-wrangling-intermediate/04_treatment-hierarchy-table_v001.csv")
 
 
 # Init_Date ---------------------------------------------------------------
@@ -312,10 +312,10 @@ treatment.info.gisjoin <- treatment.info %>%
 # Write out as v001 -------------------------------------------------------
 
 write_csv(treatment.info,
-          file = "data/versions-from-R/03_Treatment-info_v001.csv")
+          file = "data/versions-from-R/04_Treatment-info_v001.csv")
 
 write_csv(treatment.info.gisjoin,
-          file = "data/versions-from-R/03_Treatment-info_v001-gisjoin.csv")
+          file = "data/versions-from-R/04_Treatment-info_v001-gisjoin.csv")
 
 
-save.image("RData/03_treatment-info_v001.RData")
+save.image("RData/04_treatment-info_v001.RData")
