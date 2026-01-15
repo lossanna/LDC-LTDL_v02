@@ -1,14 +1,17 @@
-# Created: 2025-09-30
-# Updated: 2025-09-30
+# Created: 2026-01-15
+# Updated: 2026-01-15
 
 # Purpose: Write the LDC points to shapefiles.
+
+# From 2025-01-15 download of geoindicators.csv.
+
 
 library(tidyverse)
 library(sf)
 
 # Load data ---------------------------------------------------------------
 
-geoindicators.raw <- read_csv("data/raw/LDC/geoindicators.csv")
+geoindicators.raw <- read_csv("data/raw/downloaded/ldc-data-2026-01-15/geoindicators.csv")
 
 # Data wrangling ----------------------------------------------------------
 
