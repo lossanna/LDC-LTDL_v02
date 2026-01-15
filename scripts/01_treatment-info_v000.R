@@ -2,7 +2,7 @@
 # Updated: 2026-01-15
 
 # Purpose: Write out Treatment Info v000, which has fixed the issues created by 
-#   overflow text of a single cell.
+#   overflow text of a single cell (a problem of Excel).
 
 library(tidyverse)
 
