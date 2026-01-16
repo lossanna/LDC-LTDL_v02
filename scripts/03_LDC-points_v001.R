@@ -101,7 +101,7 @@ most.recent.combined <- most.recent.single %>%
 # Separate out columns for GIS join ---------------------------------------
 
 most.recent.gisjoin <- most.recent.combined %>% 
-  select(ProjKey, PrimaryKey, DateVisted, EcoSiteID, MLRADesc, MLRASym)
+  select(ORIG_OID, OVERLAP_OID, ProjKey, PrimaryKey, DateVisted, EcoSiteID, MLRADesc, MLRASym)
 
 
 # Write LDC001 to CSV -----------------------------------------------------
