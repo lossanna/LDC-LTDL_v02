@@ -41,10 +41,6 @@ ldc.trt.sjoin <- ldc.trt.sjoin.raw %>%
          init_date_est = as.Date(init_date_est, format = "%m/%d/%Y"),
          comp_date_est = as.Date(comp_date_est, format = "%m/%d/%Y"))
 
-# Remove join cols
-ldc.trt.sjoin <- ldc.trt.sjoin %>% 
-  select(-Join_Count, -TARGET_FID, -JOIN_FID, -ORIG_OID)
-
 # Separate out points that overlap with treatment polygons
 ldc.trt.overlap <- ldc.trt.sjoin %>% 
   filter(!is.na(TrtPolyID))
@@ -239,7 +235,7 @@ combos.select <- combos.select %>%
   rename(Trt_Type_Sub = combo_sub,
          Trt_Type_Major = combo_major,
          recent_trt_count = sub_count) %>% 
-  select(LDCpointID, PrimaryKey, ProjKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
          Trt_Type_Major, Trt_Type_Sub, most_recent_comp, recent_trt_count)
 
 
@@ -267,7 +263,7 @@ non.combo.mr.single <- non.combo.mr %>%
 non.combo.mr.single <- non.combo.mr.single %>% 
   mutate(most_recent_comp = comp_date_est,
          recent_trt_count = 1) %>% 
-  select(LDCpointID, PrimaryKey, ProjKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
          Trt_Type_Major, Trt_Type_Sub, most_recent_comp, recent_trt_count)   
 
 
@@ -303,7 +299,7 @@ non.combo.same <- non.combo.same %>%
 non.combo.same <- non.combo.same %>% 
   mutate(most_recent_comp = comp_date_est,
          recent_trt_count = 1) %>% 
-  select(LDCpointID, PrimaryKey, ProjKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoSiteID, EcoLvl3, MLRADesc, MLRASym,
          Trt_Type_Major, Trt_Type_Sub, most_recent_comp, recent_trt_count) %>% 
   distinct(.keep_all = TRUE)
 
@@ -369,7 +365,7 @@ major.join <- recent.trt.table.all %>%
 
 non.combo.diffsub.resolved <- non.combo.diffsub.resolved %>% 
   left_join(major.join) %>% 
-  select(LDCpointID, PrimaryKey, ProjKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
          Trt_Type_Major, Trt_Type_Sub, most_recent_comp, recent_trt_count)
 
 
@@ -409,7 +405,7 @@ other.cultural.post <- ldc.trt.overlap %>%
          Trt_Type_Sub = NA,
          most_recent_comp = NA,
          recent_trt_count = NA) %>% 
-  select(LDCpointID, PrimaryKey, ProjKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
          Trt_Type_Major, Trt_Type_Sub, most_recent_comp, recent_trt_count) %>% 
   distinct(.keep_all = TRUE)
 
@@ -420,7 +416,7 @@ ldc.control <- ldc.trt.sjoin %>%
   filter(is.na(TrtPolyID)) %>% 
   mutate(most_recent_comp = NA,
          recent_trt_count = NA) %>% 
-  select(LDCpointID, PrimaryKey, ProjKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
          Trt_Type_Major, Trt_Type_Sub, most_recent_comp, recent_trt_count)
 
 #   Check there are no duplicate primary keys
