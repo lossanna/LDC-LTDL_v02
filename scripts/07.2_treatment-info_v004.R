@@ -1,16 +1,28 @@
 # Created: 2026-01-21
-# Updated: 2026-01-21
+# Updated: 2026-01-22
 
 # Purpose: Examine treatment polygons that overlap with LDC points and find most recent
-#   treatment and most recent treatment combos (within one year of most recent), and make
+#   treatment and recent treatment combos (within one year of most recent), and make
 #   appropriate categories. Only consider treatments implemented before LDC monitoring.
 
 # Filter out rows where comp_est_date > DateVisted.
 # Filter out "Cultural Protection" and "Other" treatments (based on Trt_Type_Major).
 
-# This is similar to 05.R script, but it includes the additional 402 prescribed burns
-#   that were not in the LTDL dataset but were in the combined fire dataset. However,
-#   only 310 of those fires contained LDC points.
+# Apply the following treatment combinations (most recent treatment first):
+#   1. Aerial Seeding, Drill Seeding
+#   2. Drill Seeding, Aerial Seeding
+#   3. Aerial Seeding, Soil Disturbance
+#   4. Drill Seeding, Soil Disturbance
+#   5. Ground Seeding, Soil Disturbance
+#   6. Seeding, Soil Disturbance
+#   7. Aerial Seeding, Herbicide
+#   8. Drill Seeding, Herbicide
+
+# This is similar to 05.R script, but it includes the additional 402 prescribed burns (680 rows)
+#   that were not in the LTDL dataset but were in the combined fire dataset (310 of those
+#   those fires contained LDC points). The additional prescribed burns also changed the
+#   instance of the most recent treatment in a few cases, so treatment counts are not exactly 
+#   the same as 05.R (they only differ very slightly), but the selected combinations are.
 
 
 library(tidyverse)
@@ -19,38 +31,6 @@ library(readxl)
 # Load data ---------------------------------------------------------------
 
 ldc.trt.sjoin.raw <- read_csv("data/GIS-exports/004_LDC001-TrtPoly003-SpatialJoin_export.csv")
-ldc.trt1.sjoin <- read_csv("data/GIS-exports/002_LDC001-Trt001_SpatialJoin_export.csv")
-
-
-# Compared with 05.R ------------------------------------------------------
-
-added.fires <- ldc.trt.sjoin.raw %>% 
-  filter(Trt_ID > 73350)
-length(unique(added.fires$Trt_ID))
-
-nrow(ldc.trt.sjoin.raw) - nrow(ldc.trt1.sjoin) # 218
-
-# All LDC points are the same
-setdiff(ldc.trt.sjoin.raw$LDCpointID, ldc.trt1.sjoin$LDCpointID)
-length(unique(ldc.trt.sjoin.raw$LDCpointID)) == length(unique(ldc.trt1.sjoin$LDCpointID))
-
-sort(setdiff(ldc.trt.sjoin.raw$Trt_ID, ldc.trt1.sjoin$Trt_ID))
-
-sj.13.trt.count <- count(ldc.trt.sjoin.raw, Trt_Type_Sub)  
-sj.11.trt.count <- count(ldc.trt1.sjoin, Trt_Type_Sub)
-sj.13.trt.count == sj.11.trt.count 
-
-filter(sj.11.trt.count, is.na(Trt_Type_Sub))$n - filter(sj.13.trt.count, is.na(Trt_Type_Sub))$n
-#   There are 484 LDC points that previously did not have any overlap with treatment but overlap
-#     with added prescribed fires.
-nrow(added.fires)
-#   There are 702 LDC points that overlap with the added prescribed fires.
-nrow(ldc.trt.sjoin.raw) - nrow(ldc.trt1.sjoin) 
-#   There are 218 extra rows (points that overlap with a LTDL treatment as well as 
-#     an added prescribed fire).
-
-ldc.trt.sjoin.Rx.rm <- ldc.trt.sjoin.raw %>% 
-  filter(Trt_ID <= 73350)
 
 
 # Preliminary data wrangling ----------------------------------------------
@@ -60,6 +40,10 @@ ldc.trt.sjoin <- ldc.trt.sjoin.raw %>%
   mutate(DateVisted = as.Date(DateVisted, format = "%m/%d/%Y"),
          init_date_est = as.Date(init_date_est, format = "%m/%d/%Y"),
          comp_date_est = as.Date(comp_date_est, format = "%m/%d/%Y"))
+
+# Remove join cols
+ldc.trt.sjoin <- ldc.trt.sjoin %>% 
+  select(-Join_Count, -TARGET_FID, -JOIN_FID, -ORIG_OID)
 
 # Separate out points that overlap with treatment polygons
 ldc.trt.overlap <- ldc.trt.sjoin %>% 
@@ -204,7 +188,7 @@ count(recent.combo.sub, combo_sub) %>%
 #   I have picked 8 treatment combinations.
 
 # Will consider the following combos:
-#   (most recent treatment listed first; multiple most recent treatments are alphabetized)
+#   (most recent treatment listed first)
 # 1. Aerial Seeding, Drill Seeding
 # 2. Drill Seeding, Aerial Seeding
 # 3. Aerial Seeding, Soil Disturbance
@@ -444,27 +428,28 @@ count(ldc.control, PrimaryKey) %>%
   arrange(desc(n))
 
 
-# bind_rows() to make LDC_points_v002 -------------------------------------
+
+# bind_rows() to make treatment info v004 ---------------------------------
 
 # Combine
-ldcpts002 <- with.combos %>% 
+treatment.info.004 <- with.combos %>% 
   bind_rows(other.cultural.post) %>% 
   bind_rows(ldc.control) %>% 
   arrange(LDCpointID)
 
 # Check that all primary keys are there
-setdiff(ldc.trt.sjoin.raw$PrimaryKey, ldcpts002$PrimaryKey)
+setdiff(ldc.trt.sjoin.raw$PrimaryKey, treatment.info.004$PrimaryKey)
 
 # Check there are no duplicate primary keys
-count(ldcpts002, PrimaryKey) %>% 
+count(treatment.info.004, PrimaryKey) %>% 
   arrange(desc(n))
 
 
-# Write v002 to CSV -------------------------------------------------------
+# Write v004 to CSV -------------------------------------------------------
 
-write_csv(ldcpts002,
-          file = "data/versions-from-R/05_LDC-points_v002.csv")
+write_csv(treatment.info.004,
+          file = "data/versions-from-R/07.2_Treatment-info_v004.csv")
 
 
-save.image("RData/05_LDC-points_v002.RData")
+save.image("RData/07.2_treatment-info_v004.RData")
 
