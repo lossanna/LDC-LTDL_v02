@@ -1,5 +1,5 @@
 # Created: 2026-01-15
-# Updated: 2026-01-15
+# Updated: 2026-01-22
 
 # Purpose: Create LDC_v001, which is the most recent monitoring instance for each
 #   unique point in space.
@@ -101,7 +101,8 @@ most.recent.combined <- most.recent.single %>%
 # Separate out columns for GIS join ---------------------------------------
 
 most.recent.gisjoin <- most.recent.combined %>% 
-  select(ORIG_OID, OVERLAP_OID, ProjKey, PrimaryKey, DateVisted, EcoSiteID, MLRADesc, MLRASym)
+  select(ORIG_OID, OVERLAP_OID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, 
+         MLRADesc, MLRASym)
 
 
 # Write LDC001 to CSV -----------------------------------------------------

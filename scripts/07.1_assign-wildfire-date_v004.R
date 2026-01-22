@@ -1,5 +1,5 @@
 # Created: 2026-01-21
-# Updated: 2026-01-21
+# Updated: 2026-01-22
 
 # Purpose: Assign a date to each wildfire polygon.
 
@@ -9,16 +9,16 @@ library(tidyverse)
 # Load data ---------------------------------------------------------------
 
 ldc.wildfire.sj.raw <- read_csv("data/GIS-exports/004_LDC001-Wildfires004-SpatialJoin_export.csv")
-overlap.table.raw <- read_csv("data/GIS-exports/004_Wildfires-with-LDC-OverlapTable-004_export.csv")
+overlap.table.raw <- read_csv("data/GIS-exports/004_Overlapping-fires-table_export.csv")
 
 
 # Separate wildfire polygons ----------------------------------------------
 
 # Fire polygons only
 wildfires.all <- ldc.wildfire.sj.raw %>% 
-  filter(JOIN_FID != -1) %>% 
-  select(-Join_Count, -TARGET_FID, -JOIN_FID, -LDCpointID, -ORIG_OID, -ProjKey,
-         -PrimaryKey, -DateVisted, -EcoSiteID, -MLRADesc, -MLRASym) %>% 
+  filter(!is.na(FirePolyID)) %>% 
+  select(-LDCpointID, -ProjKey, -PrimaryKey, -DateVisted, 
+         -EcoLvl3, -EcoSiteID, -MLRADesc, -MLRASym) %>% 
   distinct(.keep_all = TRUE)
 
 # Remove fires excluded from summary rasters
@@ -36,7 +36,8 @@ unique(wildfires$Overlap_Within_1_or_2_Flag)
 # Filter overlap table for overlaps with other wildfires only
 unique(overlap.table.raw$Overlapping_Assigned_Fire_Type)
 overlap.table <- overlap.table.raw %>% 
-  filter(!Overlapping_Assigned_Fire_Type %in% c("Prescribed Fire", "Unknown - Likely Prescribed Fire"))
+  filter(!Overlapping_Assigned_Fire_Type %in% c("Prescribed Fire", "Unknown - Likely Prescribed Fire")) %>% 
+  filter(USGS_Assigned_ID %in% wildfires$USGS_Assigned_ID)
 
 # Examine overlaps of over 90% and within 2 years of each other
 overlap90 <- overlap.table %>% 
