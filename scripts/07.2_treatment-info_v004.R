@@ -1,5 +1,5 @@
 # Created: 2026-01-21
-# Updated: 2026-01-22
+# Updated: 2026-01-23
 
 # Purpose: Examine treatment polygons that overlap with LDC points and find most recent
 #   treatment and recent treatment combos (within one year of most recent), and make
@@ -226,6 +226,10 @@ combos.select <- combos.select %>%
 # Save version that retains all rows
 combos.select.allrows <- combos.select 
 
+# Save TrtPolyIDs
+combos.select.trtpolyid <- combos.select %>% 
+  select(PrimaryKey, TrtPolyID)
+
 # Retain only combo cols and remove instances of multiple rows
 #   (now ready for eventual bind_rows())
 combos.select <- combos.select %>% 
@@ -252,6 +256,11 @@ non.combo.mr <- non.combo %>%
   filter(comp_date_est == max(comp_date_est)) %>% 
   mutate(most_recent_trt_count = n()) %>% 
   ungroup()
+
+# Save TrtPolyIDs
+non.combo.mr.trtpolyid <- non.combo.mr %>% 
+  select(PrimaryKey, TrtPolyID) 
+
 
 # Separate out points with only one most recent treatment
 #   (treatment info is fine as is)
@@ -356,7 +365,6 @@ non.combo.diffsub.resolved <- non.combo.diffsub.resolved %>%
   distinct(.keep_all = TRUE) %>% 
   rename(Trt_Type_Sub = sub_selected)
 
-
 # Create Trt_Type_Major col and reorder cols
 #   (now ready for eventual bind_rows())
 major.join <- recent.trt.table.all %>% 
@@ -383,6 +391,21 @@ length(unique(with.combos$PrimaryKey)) == nrow(with.combos)
 
 # Check for missing primary keys from trt.pre.filtered
 setdiff(trt.pre.filtered$PrimaryKey, with.combos$PrimaryKey)
+
+
+# TrtPolyIDs --------------------------------------------------------------
+
+# Combine
+trtpolyid <- combos.select.trtpolyid %>% 
+  bind_rows(non.combo.mr.trtpolyid)
+
+# Check for missing primary keys from trt.pre.filtered
+setdiff(trt.pre.filtered$PrimaryKey, trtpolyid$PrimaryKey)
+
+# Retain only TrtPolyID list
+trtpolyid <- trtpolyid %>% 
+  select(TrtPolyID) %>% 
+  distinct(.keep_all = TRUE)
 
 
 # Additional primary keys -------------------------------------------------
@@ -443,8 +466,15 @@ count(treatment.info.004, PrimaryKey) %>%
 
 # Write v004 to CSV -------------------------------------------------------
 
+# Treatment info v004
 write_csv(treatment.info.004,
           file = "data/versions-from-R/07.2_Treatment-info_v004.csv")
+
+
+# TrtPolyID list
+write_csv(trtpolyid,
+          file = "data/versions-from-R/07.2_TrtPolyID-for-v004.csv")
+
 
 
 save.image("RData/07.2_treatment-info_v004.RData")
