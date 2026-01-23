@@ -228,7 +228,7 @@ combos.select.allrows <- combos.select
 
 # Save TrtPolyIDs
 combos.select.trtpolyid <- combos.select %>% 
-  select(PrimaryKey, TrtPolyID)
+  select(LDCpointID, PrimaryKey, TrtPolyID)
 
 # Retain only combo cols and remove instances of multiple rows
 #   (now ready for eventual bind_rows())
@@ -259,7 +259,7 @@ non.combo.mr <- non.combo %>%
 
 # Save TrtPolyIDs
 non.combo.mr.trtpolyid <- non.combo.mr %>% 
-  select(PrimaryKey, TrtPolyID) 
+  select(LDCpointID, PrimaryKey, TrtPolyID) 
 
 
 # Separate out points with only one most recent treatment
@@ -402,11 +402,6 @@ trtpolyid <- combos.select.trtpolyid %>%
 # Check for missing primary keys from trt.pre.filtered
 setdiff(trt.pre.filtered$PrimaryKey, trtpolyid$PrimaryKey)
 
-# Retain only TrtPolyID list
-trtpolyid <- trtpolyid %>% 
-  select(TrtPolyID) %>% 
-  distinct(.keep_all = TRUE)
-
 
 # Additional primary keys -------------------------------------------------
 
@@ -473,7 +468,7 @@ write_csv(treatment.info.004,
 
 # TrtPolyID list
 write_csv(trtpolyid,
-          file = "data/versions-from-R/07.2_TrtPolyID-for-v004.csv")
+          file = "data/versions-from-R/07.2_TrtPolyID-for-treatment-info-v004.csv")
 
 
 
