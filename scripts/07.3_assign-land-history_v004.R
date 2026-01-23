@@ -194,7 +194,7 @@ ldc.trtpolyid.004 <- ldc.004 %>%
 # Most recent treatment polygons
 trtpolyid.004.gisjoin <- ldc.004 %>% 
   left_join(trtpolyid.004) %>% 
-  select(TrtPolyID, MR_trt_comp, recent_trt_count) %>% 
+  select(TrtPolyID, MR_trt_comp) %>% 
   distinct(.keep_all = TRUE) %>% 
   filter(!is.na(TrtPolyID))
 
