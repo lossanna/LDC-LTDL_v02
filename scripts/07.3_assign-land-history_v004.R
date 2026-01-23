@@ -12,6 +12,7 @@ ldc.wildfire.sjoin.raw <- read_csv("data/GIS-exports/004_LDC001-Wildfires004-Spa
 wildfires.assigned <- read_csv("data/versions-from-R/07.1_wildfires-with-assigned-dates_v004.csv")
 treatment.info.004 <- read_csv("data/versions-from-R/07.2_Treatment-info_v004.csv")
 trtpolyid.004 <- read_csv("data/versions-from-R/07.2_TrtPolyID-for-treatment-info-v004.csv")
+geoindicators <- read_csv("data/raw/downloaded/ldc-data-2026-01-15/geoindicators.csv")
 
 
 # LDC cols alone ----------------------------------------------------------
@@ -171,11 +172,25 @@ ldc.004 <- bind_rows(ldc.control.burned1, ldc.control.not.burned2,
                      ldc.control.burned56) %>% 
   arrange(LDCpointID) 
 
+# Add in additional grouping columns (ecoregions, etc.)
+geoindicators.join <- geoindicators %>% 
+  select(`Primary Key`, `Ecoregion Level I`, `Ecoregion Level II`, `Ecoregion Level IV`,
+         State, `MODIS IGBP Name`) %>% 
+  rename(PrimaryKey = `Primary Key`,
+         EcoLvl1 = `Ecoregion Level I`,
+         EcoLvl2 = `Ecoregion Level II`,
+         EcoLvl4 = `Ecoregion Level IV`,
+         MODIS_IGBP = `MODIS IGBP Name`)
+
+ldc.004 <- ldc.004 %>% 
+  left_join(geoindicators.join)
+
 # Arrange columns
 ldc.004 <- ldc.004 %>% 
   rename(MR_wildfire = Wildfire_Date,
          MR_trt_comp = most_recent_comp) %>% 
-  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+         EcoLvl1, EcoLvl2, EcoLvl3, EcoLvl4, State, MODIS_IGBP,
          Category, Trt_Type_Major, Trt_Type_Sub, MR_trt_comp, recent_trt_count,
          FirePolyID, USGS_Assigned_ID, MR_wildfire, Fire_freq, Fire_freq_post_trt)
 
@@ -183,7 +198,8 @@ ldc.004 <- ldc.004 %>%
 #   because of treatment combinations)
 ldc.trtpolyid.004 <- ldc.004 %>% 
   left_join(trtpolyid.004) %>% 
-  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoLvl3, EcoSiteID, MLRADesc, MLRASym,
+  select(LDCpointID, ProjKey, PrimaryKey, DateVisted, EcoSiteID, MLRADesc, MLRASym,
+         EcoLvl1, EcoLvl2, EcoLvl3, EcoLvl4, State, MODIS_IGBP,
          Category, TrtPolyID, Trt_Type_Major, Trt_Type_Sub, MR_trt_comp, recent_trt_count,
          FirePolyID, USGS_Assigned_ID, MR_wildfire, Fire_freq, Fire_freq_post_trt)
 
@@ -205,6 +221,13 @@ firepolyid.004.gisjoin <- ldc.004 %>%
   filter(!is.na(FirePolyID))
 
 
+
+# Count tables ------------------------------------------------------------
+
+x <- ldc.004 %>% 
+  group_by(EcoLvl3) %>% 
+  count(Category)
+
 # Write to CSV ------------------------------------------------------------
 
 # LDC points with all info
@@ -214,7 +237,8 @@ write_csv(ldc.004,
 
 # LDC points with TrtPolyID
 write_csv(ldc.trtpolyid.004,
-          file = "data/versions-from-R/07.3_LDC-points-with-TrtPolyID_v004.csv")
+          file = "data/versions-from-R/07.3_LDC-points-with-TrtPolyID_v004.csv",
+          na = "")
 
 # GIS join for treatment polygons
 write_csv(trtpolyid.004.gisjoin,
