@@ -224,9 +224,40 @@ firepolyid.004.gisjoin <- ldc.004 %>%
 
 # Count tables ------------------------------------------------------------
 
-x <- ldc.004 %>% 
-  group_by(EcoLvl3) %>% 
+# All
+count(ldc.004, Category)
+
+# By Ecoregion Level 1
+level1 <- ldc.004 %>% 
+  group_by(EcoLvl1) %>% 
   count(Category)
+
+# By Ecoregion Level 2
+level2 <- ldc.004 %>% 
+  group_by(EcoLvl1, EcoLvl2) %>% 
+  count(Category)
+
+# By Ecoregion Level 3
+level3 <- ldc.004 %>% 
+  group_by(EcoLvl1, EcoLvl2, EcoLvl3) %>% 
+  count(Category)
+
+# By MODIS
+modis <- ldc.004 %>% 
+  group_by(MODIS_IGBP) %>% 
+  count(Category)
+
+# By State
+state <- ldc.004 %>% 
+  group_by(State) %>% 
+  count(Category)
+
+# By MLRA
+mlra <- ldc.004 %>% 
+  group_by(MLRADesc) %>% 
+  count(Category)
+
+
 
 # Write to CSV ------------------------------------------------------------
 
