@@ -1,7 +1,14 @@
 # Created: 2026-01-26
-# Updated: 2026-01-26
+# Updated: 2026-01-29
 
-# Purpose:
+# Purpose: Examine treatment categories by different spatial groupings and count
+#   number of points in each category.
+
+# The model will need at least 25-30 points per treatment group.
+
+# There isn't much difference between grouping counts of Ecoregion Level 2 vs 3,
+#   so I will go with Level 3 for more specificity.
+
 
 library(tidyverse)
 
@@ -36,6 +43,7 @@ level1 <- ldc.005 %>%
   count(Category)
 length(unique(ldc.005$EcoLvl1)) # 6
 
+
 # By Ecoregion Level 2
 level2 <- ldc.005 %>% 
   group_by(EcoLvl1, EcoLvl2) %>% 
@@ -46,17 +54,37 @@ level2.trt <- ldc.005 %>%
   group_by(EcoLvl1, EcoLvl2) %>% 
   count(Trt_Type_Sub)
 
-level2.trt3 <- ldc.005 %>% 
+level2.trt30 <- ldc.005 %>% 
   group_by(EcoLvl1, EcoLvl2) %>% 
   count(Trt_Type_Sub) %>% 
-  filter(n >= 3,
+  filter(n >= 30,
          !is.na(Trt_Type_Sub))
+
 
 # By Ecoregion Level 3
 level3 <- ldc.005 %>% 
   group_by(EcoLvl1, EcoLvl2, EcoLvl3) %>% 
   count(Category)
 length(unique(ldc.005$EcoLvl3)) # 32
+
+level3.trt <- ldc.005 %>% 
+  group_by(EcoLvl1, EcoLvl2, EcoLvl3) %>% 
+  count(Trt_Type_Sub)
+
+level3.trt25 <- ldc.005 %>% 
+  group_by(EcoLvl1, EcoLvl2, EcoLvl3, Category) %>% 
+  count(Trt_Type_Sub) %>% 
+  filter(n >= 25,
+         !is.na(Trt_Type_Sub))
+
+level3.trt30 <- ldc.005 %>% 
+  group_by(EcoLvl1, EcoLvl2, EcoLvl3, Category) %>% 
+  count(Trt_Type_Sub) %>% 
+  filter(n >= 30,
+         !is.na(Trt_Type_Sub))
+
+setdiff(level3.trt25, level3.trt30)
+
 
 # By MODIS
 modis <- ldc.005 %>% 
@@ -75,3 +103,5 @@ mlra <- ldc.005 %>%
   group_by(MLRADesc) %>% 
   count(Category)
 length(unique(ldc.005$MLRADesc)) # 69
+
+
