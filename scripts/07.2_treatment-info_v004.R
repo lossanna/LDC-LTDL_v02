@@ -1,5 +1,5 @@
 # Created: 2026-01-21
-# Updated: 2026-01-23
+# Updated: 2026-02-17
 
 # Purpose: Examine treatment polygons that overlap with LDC points and find most recent
 #   treatment and recent treatment combos (within one year of most recent), and make
@@ -226,9 +226,9 @@ combos.select <- combos.select %>%
 # Save version that retains all rows
 combos.select.allrows <- combos.select 
 
-# Save TrtPolyIDs
+# Save TrtPolyIDs & Trt_IDs
 combos.select.trtpolyid <- combos.select %>% 
-  select(LDCpointID, PrimaryKey, TrtPolyID)
+  select(LDCpointID, PrimaryKey, TrtPolyID, Trt_ID)
 
 # Retain only combo cols and remove instances of multiple rows
 #   (now ready for eventual bind_rows())
@@ -257,9 +257,9 @@ non.combo.mr <- non.combo %>%
   mutate(most_recent_trt_count = n()) %>% 
   ungroup()
 
-# Save TrtPolyIDs
+# Save TrtPolyIDs & Trt_IDs
 non.combo.mr.trtpolyid <- non.combo.mr %>% 
-  select(LDCpointID, PrimaryKey, TrtPolyID) 
+  select(LDCpointID, PrimaryKey, TrtPolyID, Trt_ID) 
 
 
 # Separate out points with only one most recent treatment
