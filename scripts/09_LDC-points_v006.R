@@ -60,6 +60,7 @@ level3.trt25 <- ldc.006 %>%
   filter(n >= 25,
          !is.na(Trt_Type_Sub)) %>% 
   ungroup()
+length(unique(level3.trt25$EcoLvl3)) # 15
 
 level3.trt30 <- ldc.006 %>% 
   group_by(EcoLvl1, EcoLvl2, EcoLvl3, Category) %>% 
@@ -67,8 +68,10 @@ level3.trt30 <- ldc.006 %>%
   filter(n >= 30,
          !is.na(Trt_Type_Sub)) %>% 
   ungroup()
+length(unique(level3.trt30$EcoLvl3)) # 15
 
 setdiff(level3.trt25, level3.trt30)
+setdiff(level3.trt25$EcoLvl3, level3.trt30$EcoLvl3)
 
 
 
