@@ -3,6 +3,10 @@
 
 # Purpose: Check LDC ecoregion categorization against spatial analysis.
 
+# All treatment types are the same for both ecoregion versions when looking at 
+#   groups with at least 25 points or more (some counts vary slightly, but treatment
+#   types are still the same).
+
 library(tidyverse)
 
 # Load data ---------------------------------------------------------------
@@ -45,7 +49,7 @@ level3.conflicting %>%
 
 
 
-# Create v007 -------------------------------------------------------------
+# Create LDC v007 ---------------------------------------------------------
 
 # Rename cols for EPA-defined ecoregions
 ldc.007 <- ldc.eco3.sj.raw %>% 
