@@ -1,7 +1,8 @@
 # Created: 2026-02-17
-# Updated: 2026-02-18
+# Updated: 2026-02-19
 
-# Purpose: Examine other columns from Treatment_info for relevant treatments.
+# Purpose: Examine other columns from Treatment_info for relevant treatments and write
+#   out CSV that connects other other cols to ecoregion 3.
 
 library(tidyverse)
 
@@ -92,5 +93,5 @@ trt.007.joined <- ldc.trt.007 %>%
 # Write to CSV ------------------------------------------------------------
 
 write_csv(trt.007.joined,
-          file = "data/versions-from-R/11_Treatment-info-with-ecoregion_v007.csv",
+          file = "data/versions-from-R/11_Treatment-info-extra-cols-with-ecoregion_v007.csv",
           na = "")
