@@ -11,3 +11,5 @@ data/raw/LDC
 data/raw/Treatment_Info_R.csv
 data/versions-from-R
 data/GIS-exports
+data/data-wrangling-intermediate/14.1_LDC008-coordinate-lists
+data/data-wrangling-intermediate/14.2_results_bulk-point-query-service
