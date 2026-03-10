@@ -1,5 +1,5 @@
 # Created: 2026-03-09
-# Updated: 2026-03-09
+# Updated: 2026-03-10
 
 # Purpose: Collate the results of the bulk point query service, and ultimately assign
 #   an elevation value to each LDC point.
@@ -23,48 +23,84 @@ names(files) <- str_extract(files, "chunk\\d+-\\d+") %>%
   str_replace("-", ".")
 
 combined.chunks.csvs <- files %>%
-  map(read_csv) 
+  map(~ vroom::vroom(.x, show_col_types = FALSE))
 
 
-# Data wrangling ----------------------------------------------------------
+# Combine chunks ----------------------------------------------------------
 
 # Without duplicates
 combined.chunks <- combined.chunks.csvs %>% 
-  map(\(df) filter(df, `Elev(ft)` != -9999)) %>%
   split(str_extract(names(files), "\\d+") %>% 
           str_pad(width = 3, side = "left", pad = "0") %>% 
           paste0("chunk", .)) %>%
-  map(bind_rows) %>%
+  imap(\(x, nm) bind_rows(x) %>% mutate(chunk = nm)) %>%
   map(\(df) df %>% 
-        select(-ID, -`Elev(ft)`) %>% 
+        filter(`Elev(ft)` != -9999) %>% 
+        select(-`Elev(ft)`) %>% 
         rename(Elev_m = `Elev(m)`,
                InputLon = `Input Lon`,
                InputLat = `Input Lat`) %>% 
         distinct(.keep_all = TRUE) %>% 
-        group_by(InputLon, InputLat) %>% 
-        slice_head(n = 1))
+        group_by(chunk, ID) %>% 
+        slice_head(n = 1) %>% 
+        ungroup())
 
 
 # With duplicates
 combined.chunks.dup <- combined.chunks.csvs %>% 
-  map(\(df) filter(df, `Elev(ft)` != -9999)) %>%
   split(str_extract(names(files), "\\d+") %>% 
           str_pad(width = 3, side = "left", pad = "0") %>% 
           paste0("chunk", .)) %>%
-  map(bind_rows) %>%
+  imap(\(x, nm) bind_rows(x) %>% mutate(chunk = nm)) %>%
   map(\(df) df %>% 
-        select(-ID, -`Elev(ft)`) %>% 
+        filter(`Elev(ft)` != -9999) %>% 
+        select(-`Elev(ft)`) %>% 
         rename(Elev_m = `Elev(m)`,
                InputLon = `Input Lon`,
                InputLat = `Input Lat`) %>% 
         distinct(.keep_all = TRUE))
 
-combined.dup <- bind_rows(combined.chunks.dup) %>% 
+
+# Join with LDC008 --------------------------------------------------------
+
+# Add ID and chunk cols to LDC008
+ldc008.join <- ldc008.raw %>%
+  mutate(
+    ID = ((row_number() - 1) %% 500) + 1,
+    chunk = paste0(
+      "chunk",
+      str_pad(((row_number() - 1) %/% 500) + 1, width = 3, pad = "0")
+    )
+  )
+
+# Calculate differences in elevation for the same point
+combined.dup.all <- bind_rows(combined.chunks.dup) %>% 
+  left_join(ldc008.join) 
+
+combined.dup <- combined.dup.all %>% 
   summarise(difference = max(Elev_m) - min(Elev_m),
-            .by = c(InputLon, InputLat))
+            .by = c(LDCpointID, chunk, ID)) %>% 
+  ungroup()
 summary(combined.dup$difference)
 
+#   Examine differences >3 m
+combined.dup.inspect.id <- combined.dup %>% 
+  filter(difference > 3)
+combined.dup.inspect <- combined.dup %>% 
+  filter(LDCpointID %in% combined.dup.inspect.id$LDCpointID) %>% 
+  left_join(combined.dup.all) %>% 
+  arrange(desc(difference)) %>% 
+  select(-InputLon, -InputLat)
+count(combined.dup.inspect, chunk) %>% 
+  arrange(desc(n)) %>% 
+  print(n = 30)
 
 
+# Join without duplicates
+combined.all <- bind_rows(combined.chunks) %>% 
+  left_join(ldc008.join)
 
-
+# Points still missing
+points.missing <- ldc008.raw %>% 
+  left_join(combined.all) %>% 
+  filter(is.na(Elev_m))
