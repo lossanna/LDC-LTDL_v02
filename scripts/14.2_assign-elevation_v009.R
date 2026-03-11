@@ -1,5 +1,5 @@
 # Created: 2026-03-09
-# Updated: 2026-03-10
+# Updated: 2026-03-11
 
 # Purpose: Collate the results of the bulk point query service, and ultimately assign
 #   an elevation value to each LDC point.
@@ -73,17 +73,25 @@ ldc008.join <- ldc008.raw %>%
     )
   )
 
-# Calculate differences in elevation for the same point
+# Join without duplicates
+combined.all <- bind_rows(combined.chunks) %>% 
+  left_join(ldc008.join)
+
+# Join with duplicates
 combined.dup.all <- bind_rows(combined.chunks.dup) %>% 
   left_join(ldc008.join) 
 
+
+# Examine elevation differences for same point ----------------------------
+
+# Calculate differences in elevation for the same point
 combined.dup <- combined.dup.all %>% 
   summarise(difference = max(Elev_m) - min(Elev_m),
             .by = c(LDCpointID, chunk, ID)) %>% 
   ungroup()
 summary(combined.dup$difference)
 
-#   Examine differences >3 m
+# Examine differences >3 m
 combined.dup.inspect.id <- combined.dup %>% 
   filter(difference > 3)
 combined.dup.inspect <- combined.dup %>% 
@@ -95,12 +103,69 @@ count(combined.dup.inspect, chunk) %>%
   arrange(desc(n)) %>% 
   print(n = 30)
 
+# A difference of 25 m is probably negible in the scope of things; proceed with
+#   the data collected so far.
 
-# Join without duplicates
-combined.all <- bind_rows(combined.chunks) %>% 
-  left_join(ldc008.join)
+
+# Find elevation for points still missing ---------------------------------
 
 # Points still missing
 points.missing <- ldc008.raw %>% 
   left_join(combined.all) %>% 
   filter(is.na(Elev_m))
+
+#   Formatted for bulk point query service
+points.missing2 <- points.missing %>% 
+  select(X_WSG1984, Y_WSG1984)
+  
+write_csv(points.missing2,
+          file = "data/data-wrangling-intermediate/14.2_points-missing-elevation.csv",
+          col_names = FALSE)
+
+# Read in results
+missing1 <- read_csv("data/data-wrangling-intermediate/14.2_results_bulk-point-query-service/bulk-pqs_missing1.csv")
+missing2 <- read_csv("data/data-wrangling-intermediate/14.2_results_bulk-point-query-service/bulk-pqs_missing2.csv")
+missing3 <- read_csv("data/data-wrangling-intermediate/14.2_results_bulk-point-query-service/bulk-pqs_missing3.csv") 
+
+# Combine
+missing.all <- missing1 %>% 
+  bind_rows(missing2, missing3) %>% 
+  filter(`Elev(ft)` != -9999) %>% 
+  select(-`Elev(ft)`) %>% 
+  rename(Elev_m = `Elev(m)`,
+         InputLon = `Input Lon`,
+         InputLat = `Input Lat`) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  group_by(ID) %>% 
+  slice_head(n = 1) %>% 
+  ungroup()
+
+# Create df to join LDCpointID for missing points
+ldc008.missing.join <- ldc008.raw %>% 
+  filter(LDCpointID %in% points.missing$LDCpointID) %>% 
+  mutate(ID = 1:108)
+
+# Join to get LDCpointID
+missing.all <- missing.all %>% 
+  left_join(ldc008.missing.join)
+
+
+# Combine all to get full elevation list ----------------------------------
+
+# With coordinates
+ldc.elev <- combined.all %>% 
+  bind_rows(missing.all) %>% 
+  arrange(LDCpointID) %>% 
+  select(LDCpointID, PrimaryKey, X_WSG1984, Y_WSG1984, InputLon, InputLat, Elev_m)
+
+# Just elevation
+ldc.elev.gisjoin <- ldc.elev %>% 
+  select(LDCpointID, Elev_m)
+
+# Write to CSV ------------------------------------------------------------
+
+write_csv(ldc.elev,
+          file = "data/versions-from-R/14.2_LDC-with-elevation_v009.csv")
+
+write_csv(ldc.elev.gisjoin,
+          file = "data/versions-from-R/14.2_LDC-with-elevation_v009-gisjoin.csv")
