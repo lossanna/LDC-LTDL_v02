@@ -1,7 +1,7 @@
 # README for `data/raw/`
 
 Created: 2026-01-15  
-Updated: 2026-01-15
+Updated: 2026-03-12
 
 ## Notes
 ### LDC 
@@ -19,6 +19,7 @@ Same as Project v01.
     - Downloaded from https://landscapedatacommons.org/ldc-map on 2026-01-15.
          - Download of geoindicators for all plots in the western continental US.
             - Select plots on map -> Download -> Indicators
+    - Additional download of all plots on 2026-03-11.
 
 
 ## Directory
@@ -28,9 +29,14 @@ Same as Project v01.
         - Direct download of geoindicators data for all plots, downloaded directly from LDC website as single file.
         - `geoindicators.csv`
         - `table.schema.csv`
+    - `ldc-data-2026-03-11/`
+        - Direct download of geoindicators data for all plots, downloaded directly from LDC website as single file.
+        - `geoindicators.csv`
+        - `table.schema.csv`
     - `LTDL_data_csvs/`
         - `Treatment_Info.csv` (not used because overflow text causes extra rows)
     -   `2026-01-05_Screenshot-of-LDC-plots.png`
+    -   `2026-03-11_Screenshot-of-LDC-plots.png`
 - `Treatment_Info_columns.xlsx`
     - A spreadsheet to describe each of the columns in the `Treatment_Info` table.
     - Copied from Project v01.

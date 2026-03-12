@@ -1,12 +1,12 @@
 # README for `data/`
 
 Created: 2026-01-15  
-Updated: 2026-01-15
+Updated: 2026-03-12
 
 
 ## Directory
 - `data-wrangling-intermediate/`
-    - Subfolder contains own README.
+    - Intermediate CSVs produced from analysis, such as output/edited pairs, and also CSVs needed to get elevation data from the National Map via bulk point query service.
 - `GIS-exports/`
     - CSVs exported from Arc GIS Pro (products of geoprocessing); not pushed to GitHub.
     - See [Google Doc notes (Maps v02 tab)](https://docs.google.com/document/d/1gshsoIPIgJ5tUT7jBK2LmrB_ZmTPzvl8P9q5xpuQqKA/edit?tab=t.y8517mh4o6i) for more information.
